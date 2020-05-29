@@ -128,9 +128,9 @@ local defaults = {
 				two_point_five_opt = false, -- Perform optimized 2-opt pass
 			},
 			prof_options = {
-				['*'] = "Always",
+				['*'] = "When active",
 			},
-			use_auto_showhide = false,
+			use_auto_showhide = true,
 			waypoint_hit_distance = 50,
 			line_gaps = true,
 			line_gaps_skip_cluster = true,

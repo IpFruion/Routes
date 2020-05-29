@@ -7,15 +7,16 @@ local options
 -- Our db
 local db
 
-local have_prof
-if select(4,GetBuildInfo()) < 20000 then
-	have_prof = {
+local have_prof_skill
+local WoWClassic = select(4,GetBuildInfo()) < 20000
+if WoWClassic then
+	have_prof_skill = {
 		Herbalism  = false,
 		Mining     = false,
 		Fishing    = false,
 	}
 else
-	have_prof = {
+	have_prof_skill = {
 		Herbalism  = false,
 		Mining     = false,
 		Fishing    = false,
@@ -25,7 +26,6 @@ else
 end
 local active_tracking = {}
 local profession_to_skill = {}
-local WoWClassic = select(4,GetBuildInfo()) < 20000
 
 profession_to_skill[GetSpellInfo(2575)] = "Mining"
 if WoWClassic then
@@ -48,15 +48,13 @@ else
 	tracking_spells[(GetSpellInfo(2580))] = "Mining"
 	tracking_spells[(GetSpellInfo(2383))] = "Herbalism"
 	tracking_spells[(GetSpellInfo(2481))] = "Treasure"
-	if not WoWClassic then
-		tracking_spells[(GetSpellInfo(43308))] = "Fishing"
-		tracking_spells[(GetSpellInfo(167898))] = "Logging"
-	end
+	tracking_spells[(GetSpellInfo(43308))] = "Fishing"
+	tracking_spells[(GetSpellInfo(167898))] = "Logging"
 end
 
 function AutoShow:SKILL_LINES_CHANGED()
-	for k, v in pairs(have_prof) do
-		have_prof[k] = false
+	for k, v in pairs(have_prof_skill) do
+		have_prof_skill[k] = false
 	end
 	if WoWClassic then
 		local numSkills = GetNumSkillLines()
@@ -213,13 +211,13 @@ options = {
 					values = prof_options,
 					arg = "Fishing",
 				},
-				gas = {
-					name = L["ExtractGas"], type = "select",
-					desc = L["Routes with Gas"],
-					order = 200,
-					values = prof_options3,
-					arg = "ExtractGas",
-				},
+				-- gas = {
+				-- 	name = L["ExtractGas"], type = "select",
+				-- 	desc = L["Routes with Gas"],
+				-- 	order = 200,
+				-- 	values = prof_options3,
+				-- 	arg = "ExtractGas",
+				-- },
 				herbalism = {
 					name = L["Herbalism"], type = "select",
 					desc = L["Routes with Herbs"],
@@ -241,30 +239,40 @@ options = {
 					values = prof_options2,
 					arg = "Treasure",
 				},
-				archaeology = {
-					name = L["Archaeology"], type = "select",
-					desc = L["Routes with Archaeology"],
-					order = 600,
-					values = prof_options3,
-					arg = "Archaeology",
-				},
-				note = {
-					name = L["Note"], type = "select",
-					desc = L["Routes with Notes"],
-					order = 700,
-					values = prof_options4,
-					arg = "Note",
-				},
-				logging = {
-					name = L["Logging"], type = "select",
-					desc = L["Routes with Timber"],
-					order = 800,
-					values = prof_options2,
-					arg = "Logging",
-				},
 			},
 		},
 	},
 }
+
+if not WoWClassic then
+	options.auto_group.args.gas = {
+		name = L["ExtractGas"], type = "select",
+		desc = L["Routes with Gas"],
+		order = 200,
+		values = prof_options3,
+		arg = "ExtractGas",
+	}
+	options.auto_group.args.archaeology = {
+		name = L["Archaeology"], type = "select",
+		desc = L["Routes with Archaeology"],
+		order = 600,
+		values = prof_options3,
+		arg = "Archaeology",
+	}
+	options.auto_group.args.note = {
+		name = L["Note"], type = "select",
+		desc = L["Routes with Notes"],
+		order = 700,
+		values = prof_options4,
+		arg = "Note",
+	}
+	options.auto_group.args.logging = {
+		name = L["Logging"], type = "select",
+		desc = L["Routes with Timber"],
+		order = 800,
+		values = prof_options2,
+		arg = "Logging",
+	}
+end
 
 -- vim: ts=4 noexpandtab
