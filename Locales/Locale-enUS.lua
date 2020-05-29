@@ -100,6 +100,7 @@ L["CREATE_BARE_ROUTE_DESC"] = "This will create a route with just 3 initial poin
 L["Recreate Route"] = true
 L["Recreate this route with the same creation settings. NOTE: This only works for data from GatherMate2 and Gatherer."] = true
 L["Are you sure you want to recreate this route? This will delete all customized settings for this route."] = true
+L["Open up Map(M) please first."] = true
 
 -- DB prefixes
 L["GatherMate2Herb Gathering"] = "Herbalism"

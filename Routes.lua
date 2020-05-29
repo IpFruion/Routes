@@ -3007,7 +3007,15 @@ do
 		taboo_edit_list[taboo_data] = copy_of_taboo_data
 
 		-- open the WorldMapFlame on the right zone
-		OpenWorldMap(zone)
+		-- OpenWorldMap(zone) Blizzard Broken code. Putting in hack to detect if visible
+
+		if not WorldMapFrame:IsVisible() then
+			self:CancelEditTaboo(info)
+			Routes:Print(L["Open up Map(M) please first."])
+			return
+		end
+
+		WorldMapFrame:SetMapID(zone)
 
 		local fh, fw = Routes.DataProvider.tabooPin:GetHeight(), Routes.DataProvider.tabooPin:GetWidth()
 
@@ -3099,15 +3107,17 @@ do
 		for i = 1, #copy_of_taboo.route do
 			-- Return the pool of pins representing real nodes
 			local node = copy_of_taboo.nodes[i]
-			node:Hide()
-			taboo_cache[node] = true
-			copy_of_taboo.nodes[i] = nil
+			if node ~= nil then
+				node:Hide()
+				taboo_cache[node] = true
+				copy_of_taboo.nodes[i] = nil
 
-			-- Return the pool of pins representing helper nodes
-			node = copy_of_taboo.fakenodes[i]
-			node:Hide()
-			taboo_cache[node] = true
-			copy_of_taboo.fakenodes[i] = nil
+				-- Return the pool of pins representing helper nodes
+				node = copy_of_taboo.fakenodes[i]
+				node:Hide()
+				taboo_cache[node] = true
+				copy_of_taboo.fakenodes[i] = nil
+			end
 		end
 		assert(not next(copy_of_taboo.fakenodes))
 		assert(not next(copy_of_taboo.nodes))
