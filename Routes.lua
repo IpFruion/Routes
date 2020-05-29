@@ -1,7 +1,7 @@
-﻿--[[
+--[[
 ********************************************************************************
 Routes
-@project-version@
+v1.6.3
 16 October 2014
 (Originally written for Live Servers v4.3.0.15050)
 (Hotfixed for v6.0.2.19034)
@@ -193,8 +193,13 @@ local function processMapChildrenRecursive(parent)
 	end
 end
 
+local WORLD_MAP_ID = 947
 local COSMIC_MAP_ID = 946
-processMapChildrenRecursive(COSMIC_MAP_ID)
+if select(4,GetBuildInfo()) < 20000 then
+	processMapChildrenRecursive(WORLD_MAP_ID)
+else
+	processMapChildrenRecursive(COSMIC_MAP_ID)
+end
 
 ------------------------------------------------------------------------------------------------------
 -- Core Routes functions

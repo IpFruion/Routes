@@ -1,4 +1,4 @@
-﻿local Routes = LibStub("AceAddon-3.0"):GetAddon("Routes")
+local Routes = LibStub("AceAddon-3.0"):GetAddon("Routes")
 local AutoShow = Routes:NewModule("AutoShow", "AceEvent-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("Routes")
 
@@ -7,50 +7,92 @@ local options
 -- Our db
 local db
 
-local have_prof = {
-	Herbalism  = false,
-	Mining     = false,
-	Fishing    = false,
-	ExtractGas = false, -- Engineering
-	Archaeology= false,
-}
+local have_prof
+if select(4,GetBuildInfo()) < 20000 then
+	have_prof = {
+		Herbalism  = false,
+		Mining     = false,
+		Fishing    = false,
+	}
+else
+	have_prof = {
+		Herbalism  = false,
+		Mining     = false,
+		Fishing    = false,
+		ExtractGas = false, -- Engineering
+		Archaeology= false,
+	}
+end
 local active_tracking = {}
 local profession_to_skill = {}
-profession_to_skill[GetSpellInfo(170691)] = "Herbalism"
+local WoWClassic = select(4,GetBuildInfo()) < 20000
+
 profession_to_skill[GetSpellInfo(2575)] = "Mining"
-profession_to_skill[GetSpellInfo(7620) or GetSpellInfo(131476)] = "Fishing"
-profession_to_skill[GetSpellInfo(4036)] = "ExtractGas"
-if GetSpellInfo(78670) then
-	profession_to_skill[GetSpellInfo(78670)] = "Archaeology"
+if WoWClassic then
+	profession_to_skill[GetSpellInfo(2366)] = "Herbalism"
+	profession_to_skill[GetSpellInfo(7620)] = "Fishing"
+else
+	profession_to_skill[GetSpellInfo(170691)] = "Herbalism"
+	profession_to_skill[GetSpellInfo(7620) or GetSpellInfo(131476)] = "Fishing"
+	profession_to_skill[GetSpellInfo(4036)] = "ExtractGas"
+	if GetSpellInfo(78670) then
+		profession_to_skill[GetSpellInfo(78670)] = "Archaeology"
+	end
 end
 local tracking_spells = {}
-tracking_spells[(GetSpellInfo(2580))] = "Mining"
-tracking_spells[(GetSpellInfo(2383))] = "Herbalism"
-tracking_spells[(GetSpellInfo(43308))] = "Fishing"
-tracking_spells[(GetSpellInfo(2481))] = "Treasure"
-tracking_spells[(GetSpellInfo(167898))] = "Logging"
+if WoWClassic then
+	tracking_spells[(select(3, GetSpellInfo(2580)))] = "Mining"
+	tracking_spells[(select(3, GetSpellInfo(2383)))] = "Herbalism"
+	tracking_spells[(select(3, GetSpellInfo(2481)))] = "Treasure"
+else
+	tracking_spells[(GetSpellInfo(2580))] = "Mining"
+	tracking_spells[(GetSpellInfo(2383))] = "Herbalism"
+	tracking_spells[(GetSpellInfo(2481))] = "Treasure"
+	if not WoWClassic then
+		tracking_spells[(GetSpellInfo(43308))] = "Fishing"
+		tracking_spells[(GetSpellInfo(167898))] = "Logging"
+	end
+end
 
 function AutoShow:SKILL_LINES_CHANGED()
 	for k, v in pairs(have_prof) do
 		have_prof[k] = false
 	end
-	for index, key in pairs({GetProfessions()}) do
-		local name, icon, rank, maxrank, numspells, spelloffset, skillline = GetProfessionInfo(key)
-		if profession_to_skill[name] then
-			have_prof[profession_to_skill[name]] = true
+	if WoWClassic then
+		local numSkills = GetNumSkillLines()
+		for i = 1, numSkills do
+			local skillName, header = GetSkillLineInfo(i)
+				if profession_to_skill[skillName] then
+					have_prof_skill[profession_to_skill[skillName]] = true
+				end
+		end
+	else
+		for index, key in pairs({GetProfessions()}) do
+			local name, icon, rank, maxrank, numspells, spelloffset, skillline = GetProfessionInfo(key)
+			if profession_to_skill[name] then
+				have_prof_skill[profession_to_skill[name]] = true
+			end
 		end
 	end
 	self:ApplyVisibility()
 end
 
 function AutoShow:MINIMAP_UPDATE_TRACKING()
-	for i = 1, GetNumTrackingTypes() do
-		local name, texture, active, category  = GetTrackingInfo(i)
-		if tracking_spells[name] then
-			if active then
-				active_tracking[tracking_spells[name]] = true
-			else
-				active_tracking[tracking_spells[name]] = false
+	if WoWClassic then
+		table.wipe(active_tracking)
+		local texture = GetTrackingTexture()
+		if tracking_spells[texture] then
+			active_tracking[tracking_spells[texture]] = true
+		end
+	else
+		for i = 1, GetNumTrackingTypes() do
+			local name, texture, active, category  = GetTrackingInfo(i)
+			if tracking_spells[name] then
+				if active then
+					active_tracking[tracking_spells[name]] = true
+				else
+					active_tracking[tracking_spells[name]] = false
+				end
 			end
 		end
 	end
@@ -66,12 +108,14 @@ function AutoShow:ApplyVisibility()
 					local visible = false
 					for db_type in pairs(route_data.db_type) do -- for each db type used
 						local status = db.defaults.prof_options[db_type]
+						-- print("Here, ".. tostring(db_type).. ", " .. status .. tostring(active_tracking[db_type]))
 						if status == "Always" then
 							visible = true
 						elseif status == "With Profession" and have_prof[db_type] then
 							visible = true
 						elseif status == "When active" and active_tracking[db_type] then
 							visible = true
+							-- print("Visible: "..tostring(db_type))
 						--elseif status == "Never" then
 						--	visible = false
 						end
